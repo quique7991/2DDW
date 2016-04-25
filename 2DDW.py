@@ -2,13 +2,13 @@ from numpy import array, zeros, argmin, inf,empty
 from collections import deque
 from dtw import dtw
 
-def 2DDW(x,y,dist_func):
+def twoDDW(x,y,dist_func):
     """
     Computes 2-dimensional Dynamic Warping of two images.
     :param 2D-array x: N1*M1 array
     :param 2D-array y: N2*M2 array
     :param func dist: distance used as cost measure
-     Returns the minimum distance, the cost matrix, the accumulated cost matrix, and the wrap path.
+     Returns the minimum distance, the accumulated cost matrix, and the wrap path.
     """
     assert len(x)
     assert len(y)
@@ -42,6 +42,26 @@ def 2DDW(x,y,dist_func):
                     if cost < final_cost:
                         final_cost = cost
         D[i[0],i[1],i[2],i[3]]=final_cost
+        return D[-1,-1,-1,-1] / sum(D1.shape), D, traceback(D,N1,M1,N2,M2)
+
+def traceback(D,N1,M1,N2,M2):
+    x = zeros(N1,M1)
+    y = zeros(N2,M2)
+    current_stage = (N1-1,M1-1,N2-1,M2-1)
+    best_prev_stage = current_stage
+    solution = []
+    while current_stage is not (1,1,1,1):
+        cost = Inf
+        stage = (-1,-1,-1,-1)
+        for num in range(15):
+            new_stage = prev_stage(current_stage,num)
+            if verify_boundaries(new_stage):
+                stage_cost = D(new_stage)
+                if stage_cost < cost:
+                    cost = stage_cost
+                    stage = new_stage
+            solution.append(stage)
+    return solution
 
 def zeros(stage):
     if stage[0]==0 and stage[1]==0 and stage[2] == 0 and stage[3] == 0:
@@ -51,7 +71,7 @@ def zeros(stage):
 def cost(r1_r2,c1_c2,num):
     if num < 5 or num == 6 or num == 8 or num == 9 or num == 12:
         return r1_r2+c1_c2
-    else if num == 5 or num == 7 or num == 13:
+    elif num == 5 or num == 7 or num == 13:
         return r1_r2
     return DTW_C1_C2
 
@@ -71,7 +91,7 @@ def Calculation_Order(N1,M1,N2,M2):
     max_value=(N1,M1,N2,M2)
     Queue = deque()
     Stage_List = deque()
-    Current_Stage = (N1,M1,N2,M2)
+    Current_Stage = (N1-1,M1-1,N2-1,M2-1)
     Queue.append(Current_Stage)
     while len(Queue) != 0:
         Current_Stage = Q.pop()
@@ -84,7 +104,7 @@ def Calculation_Order(N1,M1,N2,M2):
     return Stage_List
 
 def verify_boundaries(stage,max_value):
-    for i in range(len(stage):
+    for i in range(len(stage)):
         if stage[i] < 0 or stage[i] > max_value[i]:
             return False
     return True
@@ -106,3 +126,5 @@ def previous_stage(stage):
                 for l in [-1,0]:
                     previous.append( (stage[0]+i,stage[1]+j,stage[2]+k,stage[3]+l))
     return previous
+
+print "Hello"
